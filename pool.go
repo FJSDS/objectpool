@@ -18,8 +18,9 @@ type objectPool struct {
 }
 
 func (o *objectPool) get(p uintptr) *sync.Pool {
-	p &= math.MaxUint16
-	ss := o.m[p]
+	index := (p >> 6) & math.MaxUint16
+
+	ss := o.m[index]
 	for _, s := range ss {
 		if s.uintptr == p {
 			return s.Pool
@@ -29,7 +30,7 @@ func (o *objectPool) get(p uintptr) *sync.Pool {
 		uintptr: p,
 		Pool:    &sync.Pool{},
 	}
-	o.m[p] = append(o.m[p], pu)
+	o.m[index] = append(o.m[index], pu)
 	return pu.Pool
 }
 
