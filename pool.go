@@ -8,13 +8,15 @@ import (
 
 var op = objectPool{}
 
-type PoolUintptr struct {
+type poolUintptr struct {
 	uintptr
 	*sync.Pool
 }
 
 type objectPool struct {
-	m [math.MaxUint16][]*PoolUintptr
+	m    [math.MaxUint16][]*poolUintptr
+	ml   [math.MaxUint16]sync.Mutex
+	lock sync.Mutex
 }
 
 func (o *objectPool) get(p uintptr) *sync.Pool {
@@ -26,11 +28,21 @@ func (o *objectPool) get(p uintptr) *sync.Pool {
 			return s.Pool
 		}
 	}
-	pu := &PoolUintptr{
+
+	// lock for index conflict,
+	o.ml[index].Lock()
+	for _, s := range o.m[index] {
+		if s.uintptr == p {
+			o.ml[index].Unlock()
+			return s.Pool
+		}
+	}
+	pu := &poolUintptr{
 		uintptr: p,
 		Pool:    &sync.Pool{},
 	}
 	o.m[index] = append(o.m[index], pu)
+	o.ml[index].Unlock()
 	return pu.Pool
 }
 
