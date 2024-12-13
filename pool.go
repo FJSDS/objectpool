@@ -14,9 +14,8 @@ type poolUintptr struct {
 }
 
 type objectPool struct {
-	m    [math.MaxUint16][]*poolUintptr
-	ml   [math.MaxUint16]sync.Mutex
-	lock sync.Mutex
+	m  [math.MaxUint16][]*poolUintptr
+	ml [math.MaxUint16]sync.Mutex
 }
 
 func (o *objectPool) get(p uintptr) *sync.Pool {
