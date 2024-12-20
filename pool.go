@@ -6,6 +6,10 @@ import (
 	"unsafe"
 )
 
+const (
+	maxIndex = math.MaxUint16 - 1
+)
+
 var op = objectPool{}
 
 type poolUintptr struct {
@@ -19,7 +23,7 @@ type objectPool struct {
 }
 
 func (o *objectPool) get(p uintptr) *sync.Pool {
-	index := (p >> 6) & math.MaxUint16
+	index := (p >> 6) & maxIndex
 
 	ss := o.m[index]
 	for _, s := range ss {
